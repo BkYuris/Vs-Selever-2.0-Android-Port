@@ -1552,11 +1552,9 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
-
-		for (section in noteData)
-		{
-			for (songNotes in section.sectionNotes)
-			{
+}
+		for (section in noteData) {
+			for (songNotes in section.sectionNotes)	{
 				if(songNotes[1] > -1) { //Real notes
 					var daStrumTime:Float = songNotes[0];
 					var daNoteData:Int = Std.int(songNotes[1] % 4);
