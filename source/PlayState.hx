@@ -1527,7 +1527,7 @@ class PlayState extends MusicBeatState
 		#else
 		if (OpenFlAssets.exists(file)) {
 		#end
-		var eventsData:Array<Dynamic> = Song.loadFromJson('events', songName).events;
+			var eventsData:Array<Dynamic> = Song.loadFromJson('events', songName).events;
 			for (event in eventsData) //Event Notes
 			{
 				for (i in 0...event[1].length)
@@ -1539,21 +1539,8 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
-		
-		
-			for (section in eventsData)
-			{
-				for (songNotes in section.sectionNotes)
-				{
-					if(songNotes[1] < 0) {
-						eventNotes.push([songNotes[0], songNotes[1], songNotes[2], songNotes[3], songNotes[4]]);
-						eventPushed(songNotes);
-					}
-				}
-			}
-		}
-    }
-     for (section in noteData)
+
+		for (section in noteData)
 		{
 			for (songNotes in section.sectionNotes)
 			{
