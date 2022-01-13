@@ -1622,10 +1622,8 @@ class PlayState extends MusicBeatState
 		if(eventNotes.length > 1) { //No need to sort if there's a single one or none at all
 			eventNotes.sort(sortByTime);
 		}
-		checkEventNote();
-		generatedMusic = true;
-	}
-characterTrailSetup(); //Selever Crossfade
+		
+        characterTrailSetup(); //Selever Crossfade
 
 		checkEventNote();
 		generatedMusic = true;
