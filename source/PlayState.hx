@@ -900,7 +900,15 @@ class PlayState extends MusicBeatState
 		iconP2.visible = !ClientPrefs.hideHud;
 		add(iconP2);
 		reloadHealthBarColors();
-
+		
+var creditTxt:FlxText = new FlxText(4,healthBarBG.y + 20,0,("Port By Monika"), 24);
+        creditTxt.scrollFactor.set();
+        creditTxt.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+        creditTxt.borderColor = FlxColor.BLACK;
+        creditTxt.borderSize = 3;
+        creditTxt.borderStyle = FlxTextBorderStyle.OUTLINE;
+        add(creditTxt);
+        
 		scoreTxt = new FlxText(0, healthBarBG.y + 36, FlxG.width, "", 20);
 		scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		scoreTxt.scrollFactor.set();
@@ -1625,7 +1633,58 @@ class PlayState extends MusicBeatState
 		checkEventNote();
 		generatedMusic = true;
 	}
+	
+	//Selever Crossfade
+	var flxTrlBf:FlxTrail;
+	var flxTrlDad:FlxTrail;
 
+	function characterTrailSetup() {
+		/*if (flxTrlBf != null) {
+			remove(flxTrlBf);
+			flxTrlBf.destroy();
+			flxTrlBf = null;
+		}
+		if (flxTrlDad != null) {
+			remove(flxTrlDad);
+			flxTrlDad.destroy();
+			flxTrlDad = null;
+		}*/
+		var bfTrail:Bool = false, dadTrail:Bool = false;
+		for (event in eventNotes) {
+			var arg1:String = event[2];
+			if (event[1] == 'Toggle Ghost Trail') {
+				if (!bfTrail && arg1.split(',').contains('bf')) {
+					bfTrail = true;
+				} if (!dadTrail && arg1.split(',').contains('dad')) {
+					dadTrail = true;
+				}
+				if (bfTrail && dadTrail) break;
+			}
+		}
+		if (dadTrail && flxTrlDad == null) {
+			var trail = new FlxTrail(dad, null, 4, 12, 0.25, 0.069);
+			trail.framesEnabled = true;
+			trail.color = FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]);//0xaa0044;
+			trail.visible = false;
+			insert(members.indexOf(dadGroup) - 1, trail);
+			for (anim in dad.animations) { //Srsly, why the fuck is this necessary?
+				anim.frameRate /= (anim.name == 'idle' ? 3 : 2);
+			}
+			flxTrlDad = trail;
+		} if (bfTrail && flxTrlBf == null) {
+			var trail = new FlxTrail(boyfriend, null, 4, 12, 0.25, 0.069);
+			trail.framesEnabled = true;
+			trail.color = FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]);
+			trail.visible = false;
+			insert(members.indexOf(boyfriendGroup) - 1, trail);
+			for (anim in boyfriend.animations) { //Ugh!
+				anim.frameRate /= (anim.name == 'idle' ? 3 : 2);
+			}
+			flxTrlBf = trail;
+		}
+	}
+	//
+	
 	function eventPushed(event:Array<Dynamic>) {
 		switch(event[2]) {
 			case 'Change Character':
@@ -2779,7 +2838,25 @@ class PlayState extends MusicBeatState
 		}
 		callOnLuas('onEvent', [eventName, value1, value2]);
 	}
-
+	
+case 'Toggle Ghost Trail': //Selever Crossfade
+				var target = value1.split(',');
+				var enabled = value2 == 'on' || value2 == '1' || value2 == 'true';
+				if (target.length == 0 || (!enabled && !(value2 == 'off' || value2 == '0' || value2 == 'false'))) {
+					//break; //tf you mean breaks don't work here?
+				} else {
+					if (target.contains('bf')) {
+						flxTrlBf.visible = enabled;
+						trace('bf trail ' + (enabled ? 'enabled' : 'disabled'));
+					} if (target.contains('dad')) {
+						flxTrlDad.visible = enabled;
+						trace('dad trail ' + (enabled ? 'enabled' : 'disabled'));
+					}
+				}
+		}
+		callOnLuas('onEvent', [eventName, value1, value2]);
+	}
+	
 	function moveCameraSection(?id:Int = 0):Void {
 		if(SONG.notes[id] == null) return;
 

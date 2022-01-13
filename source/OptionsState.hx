@@ -31,7 +31,7 @@ using StringTools;
 // TO DO: Redo the menu creation system for not being as dumb
 class OptionsState extends MusicBeatState
 {
-	var options:Array<String> = ['Notes', 'Keyboard Controls', 'Mobile Controls', 'Preferences'];
+	var options:Array<String> = ['Dialogue Language', 'Notes', 'Keyboard Controls', 'Mobile Controls', 'Preferences'];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
 	public static var menuBG:FlxSprite;		
@@ -98,6 +98,11 @@ class OptionsState extends MusicBeatState
                         _virtualpad.alpha = 0;
 
 			switch(options[curSelected]) {
+		     	case 'Dialogue Language': //Language stuff
+				LanguageSupport.languageSwitch();
+				initOptions();
+				changeSelection();
+				
 				case 'Notes':
 				 	openSubState(new NotesSubstate());
 				case 'Keyboard Controls':                                        
