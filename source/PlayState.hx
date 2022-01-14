@@ -56,6 +56,10 @@ import DialogueBoxPsych;
 import sys.FileSystem;
 #end
 
+#if mobileC
+import ui.Mobilecontrols;
+#end
+
 using StringTools;
 
 class PlayState extends MusicBeatState
@@ -244,7 +248,11 @@ class PlayState extends MusicBeatState
 	var detailsText:String = "";
 	var detailsPausedText:String = "";
 	#end
-
+	
+    #if mobileC
+	var mcontrols:Mobilecontrols; 
+	#end
+	
 	//Achievement shit
 	var keysPressed:Array<Bool> = [];
 	var boyfriendIdleTime:Float = 0.0;
@@ -1034,7 +1042,28 @@ class PlayState extends MusicBeatState
 		timeBarBG.cameras = [camHUD];
 		timeTxt.cameras = [camHUD];
 		doof.cameras = [camHUD];
+#if mobileC
+			mcontrols = new Mobilecontrols();
+			switch (mcontrols.mode)
+			{
+				case VIRTUALPAD_RIGHT | VIRTUALPAD_LEFT | VIRTUALPAD_CUSTOM:
+					controls.setVirtualPadNOTES(mcontrols._virtualPad, FULL, NONE);
+				case HITBOX:
+					controls.setHitBoxNOTES(mcontrols._hitbox);
+				default:
+			}
+			trackedinputsNOTES = controls.trackedinputsNOTES;
+			controls.trackedinputsNOTES = [];
 
+			var camcontrol = new FlxCamera();
+			FlxG.cameras.add(camcontrol);
+			camcontrol.bgColor.alpha = 0;
+			mcontrols.cameras = [camcontrol];
+
+			mcontrols.visible = false;
+
+			add(mcontrols);
+		#end
 		// if (SONG.song == 'South')
 		// FlxG.camera.alpha = 0.7;
 		// UI_camera.zoom = 1;
@@ -1520,6 +1549,9 @@ class PlayState extends MusicBeatState
 		inCutscene = false;
 		var ret:Dynamic = callOnLuas('onStartCountdown', []);
 		if(ret != FunkinLua.Function_Stop) {
+		#if mobileC
+		    mcontrols.visible = true;
+		    #end
 			generateStaticArrows(0);
 			generateStaticArrows(1);
 			for (i in 0...playerStrums.length) {
@@ -3208,7 +3240,9 @@ class PlayState extends MusicBeatState
 				return;
 			}
 		}
-		
+		#if mobileC
+		mcontrols.visible = false;
+		#end
 		timeBarBG.visible = false;
 		timeBar.visible = false;
 		timeTxt.visible = false;

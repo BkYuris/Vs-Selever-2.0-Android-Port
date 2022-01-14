@@ -434,19 +434,27 @@ class Controls extends FlxActionSet
 		{
 			case A:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonA, state));
-                        case B:
+            case B:
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuUI(action, virtualPad.buttonB, state));
+			case D:
+                //nothing							
 			case A_B:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonA, state));
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonB, state));
 			case A_B_C:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonA, state));
+				inline forEachBound(Control.BACK, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonB, state));				
+			case A_B_7:
+				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonA, state));
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonB, state));
+			case A_B_X_Y_D:
+				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonA, state));
+				inline forEachBound(Control.BACK, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonB, state));			
+            case A_B_X_Y_C_D:
+                //nothing
 			case A_B_X_Y:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonA, state));
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonB, state));
-			case D:
-
 			case NONE:
 		}
 	}
@@ -499,19 +507,27 @@ class Controls extends FlxActionSet
 		{
 			case A:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuUI(action, virtualPad.buttonA, state));
-                        case B:
+            case B:
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuUI(action, virtualPad.buttonB, state));
+			case D:
+                //nothing				
 			case A_B:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuUI(action, virtualPad.buttonA, state));
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuUI(action, virtualPad.buttonB, state));
-			case A_B_C:
+			case A_B_7:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuUI(action, virtualPad.buttonA, state));
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuUI(action, virtualPad.buttonB, state));
+			case A_B_C:
+				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonA, state));
+				inline forEachBound(Control.BACK, (action, state) -> addbuttonuNOTES(action, virtualPad.buttonB, state));				
+			case A_B_X_Y_D:
+				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuUI(action, virtualPad.buttonA, state));
+				inline forEachBound(Control.BACK, (action, state) -> addbuttonuUI(action, virtualPad.buttonB, state));	
+            case A_B_X_Y_C_D:
+                //nothing
 			case A_B_X_Y:
 				inline forEachBound(Control.ACCEPT, (action, state) -> addbuttonuUI(action, virtualPad.buttonA, state));
 				inline forEachBound(Control.BACK, (action, state) -> addbuttonuUI(action, virtualPad.buttonB, state));
-			case D:
-				
 			case NONE:
 		}
 	}
@@ -729,6 +745,37 @@ class Controls extends FlxActionSet
 		}
 	}
 
+    #if desktop
+	public function bindKeys(control:Control, keys:Array<FlxKey>)
+	{
+		var copyKeys:Array<FlxKey> = keys.copy();
+		for (i in 0...copyKeys.length) {
+			if(i == NONE) copyKeys.remove(i);
+		}
+
+		#if (haxe >= "4.0.0")
+		inline forEachBound(control, (action, state) -> addKeys(action, copyKeys, state));
+		#else
+		forEachBound(control, function(action, state) addKeys(action, copyKeys, state));
+		#end
+	}
+
+	public function unbindKeys(control:Control, keys:Array<FlxKey>)
+	{
+		var copyKeys:Array<FlxKey> = keys.copy();
+		for (i in 0...copyKeys.length) {
+			if(i == NONE) copyKeys.remove(i);
+		}
+
+		#if (haxe >= "4.0.0")
+		inline forEachBound(control, (action, _) -> removeKeys(action, copyKeys));
+		#else
+		forEachBound(control, function(action, _) removeKeys(action, copyKeys));
+		#end
+	}
+	
+	#else
+
 	public function bindKeys(control:Control, keys:Array<FlxKey>)
 	{
 		#if (haxe >= "4.0.0")
@@ -746,7 +793,8 @@ class Controls extends FlxActionSet
 		forEachBound(control, function(action, _) removeKeys(action, keys));
 		#end		
 	}	
-	
+	#end
+
 	inline static function addKeys(action:FlxActionDigital, keys:Array<FlxKey>, state:FlxInputState)
 	{
 		for (key in keys)
@@ -927,35 +975,34 @@ class Controls extends FlxActionSet
 	{
 		#if !switch
 		addGamepadLiteral(id, [
-			Control.ACCEPT => [A],
+			Control.ACCEPT => [A, START],
 			Control.BACK => [B],
 			Control.UI_UP => [DPAD_UP, LEFT_STICK_DIGITAL_UP],
 			Control.UI_DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN],
 			Control.UI_LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
 			Control.UI_RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
-			Control.NOTE_UP => [DPAD_UP, LEFT_STICK_DIGITAL_UP],
-			Control.NOTE_DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN],
-			Control.NOTE_LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT],
-			Control.NOTE_RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT],
+			Control.NOTE_UP => [DPAD_UP, LEFT_STICK_DIGITAL_UP, RIGHT_STICK_DIGITAL_UP, Y],
+			Control.NOTE_DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN, RIGHT_STICK_DIGITAL_DOWN, A],
+			Control.NOTE_LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT, RIGHT_STICK_DIGITAL_LEFT, X],
+			Control.NOTE_RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT, RIGHT_STICK_DIGITAL_RIGHT, B],
 			Control.PAUSE => [START],
-			Control.RESET => [Y]
+			Control.RESET => [8]
 		]);
 		#else
 		addGamepadLiteral(id, [
 			//Swap A and B for switch
-			Control.ACCEPT => [B],
+			Control.ACCEPT => [B, START],
 			Control.BACK => [A],
 			Control.UI_UP => [DPAD_UP, LEFT_STICK_DIGITAL_UP, RIGHT_STICK_DIGITAL_UP],
 			Control.UI_DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN, RIGHT_STICK_DIGITAL_DOWN],
 			Control.UI_LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT, RIGHT_STICK_DIGITAL_LEFT],
 			Control.UI_RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT, RIGHT_STICK_DIGITAL_RIGHT],
-			Control.NOTE_UP => [DPAD_UP, LEFT_STICK_DIGITAL_UP, RIGHT_STICK_DIGITAL_UP],
-			Control.NOTE_DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN, RIGHT_STICK_DIGITAL_DOWN],
-			Control.NOTE_LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT, RIGHT_STICK_DIGITAL_LEFT],
-			Control.NOTE_RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT, RIGHT_STICK_DIGITAL_RIGHT],
+			Control.NOTE_UP => [DPAD_UP, LEFT_STICK_DIGITAL_UP, RIGHT_STICK_DIGITAL_UP, X],
+			Control.NOTE_DOWN => [DPAD_DOWN, LEFT_STICK_DIGITAL_DOWN, RIGHT_STICK_DIGITAL_DOWN, B],
+			Control.NOTE_LEFT => [DPAD_LEFT, LEFT_STICK_DIGITAL_LEFT, RIGHT_STICK_DIGITAL_LEFT, Y],
+			Control.NOTE_RIGHT => [DPAD_RIGHT, LEFT_STICK_DIGITAL_RIGHT, RIGHT_STICK_DIGITAL_RIGHT, A],
 			Control.PAUSE => [START],
-			//Swap Y and X for switch
-			Control.RESET => [Y],
+			Control.RESET => [8],
 		]);
 		#end
 	}

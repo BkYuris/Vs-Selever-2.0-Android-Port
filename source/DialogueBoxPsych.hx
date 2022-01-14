@@ -289,7 +289,8 @@ class DialogueBoxPsych extends FlxSpriteGroup
 		if(!dialogueEnded) {
 			bgFade.alpha += 0.5 * elapsed;
 			if(bgFade.alpha > 0.5) bgFade.alpha = 0.5;
-#if mobile
+            
+            #if mobile
 		    var justTouched:Bool = false;
 
 		    for (touch in FlxG.touches.list)
@@ -303,6 +304,32 @@ class DialogueBoxPsych extends FlxSpriteGroup
 		    #end
 
 			if(PlayerSettings.player1.controls.ACCEPT#if mobile || justTouched #end) {
+				if(!daText.finishedText) {
+					if(daText != null) {
+						daText.killTheTimer();
+						daText.kill();
+						remove(daText);
+						daText.destroy();
+					}
+					daText = new Alphabet(DEFAULT_TEXT_X, DEFAULT_TEXT_Y, textToType, false, true, 0.0, 0.7);
+					add(daText);
+					
+					if(skipDialogueThing != null) {
+						skipDialogueThing();
+					}
+				} else if(currentText >= dialogueList.dialogue.length) {
+					dialogueEnded = true;
+					for (i in 0...textBoxTypes.length) {
+						var checkArray:Array<String> = ['', 'center-'];
+						var animName:String = box.animation.curAnim.name;
+						for (j in 0...checkArray.length) {
+							if(animName == checkArray[j] + textBoxTypes[i] || animName == checkArray[j] + textBoxTypes[i] + 'Open') {
+								box.animation.play(checkArray[j] + textBoxTypes[i] + 'Open', true);
+							}
+						}
+					}
+					
+			if(PlayerSettings.player1.controls.ACCEPT) {
 				if(!daText.finishedText) {
 					if(daText != null) {
 						daText.killTheTimer();
