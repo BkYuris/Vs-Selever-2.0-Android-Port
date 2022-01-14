@@ -20,13 +20,11 @@ import flixel.addons.ui.FlxUIInputText;
 import flixel.addons.ui.FlxUINumericStepper;
 import flixel.addons.ui.FlxUITabMenu;
 import flixel.ui.FlxButton;
-import openfl.net.FileReference;
-import openfl.events.Event;
-import openfl.events.IOErrorEvent;
-import flash.net.FileFilter;
 import haxe.Json;
 import DialogueBoxPsych;
 import lime.system.Clipboard;
+import sys.io.File;
+import sys.FileSystem;
 
 using StringTools;
 
@@ -96,9 +94,6 @@ class DialogueEditorState extends MusicBeatState
 		add(animText);
 		changeText();
 
-		#if mobileC
-		addVirtualPad(NONE, A);
-		#end
 		super.create();
 	}
 
@@ -126,7 +121,7 @@ class DialogueEditorState extends MusicBeatState
 		tab_group.name = "Dialogue Line";
 
 		characterInputText = new FlxUIInputText(10, 20, 80, DialogueCharacter.DEFAULT_CHARACTER, 8);
-		characterInputText.focusGained = () -> FlxG.stage.window.textInputEnabled = true;		
+		characterInputText.focusGained = () -> FlxG.stage.window.textInputEnabled = true;			
 		blockPressWhileTypingOn.push(characterInputText);
 
 		speedStepper = new FlxUINumericStepper(10, characterInputText.y + 40, 0.005, 0.05, 0, 0.5, 3);
@@ -139,7 +134,7 @@ class DialogueEditorState extends MusicBeatState
 		};
 		
 		lineInputText = new FlxUIInputText(10, speedStepper.y + 45, 200, DEFAULT_TEXT, 8);
-		lineInputText.focusGained = () -> FlxG.stage.window.textInputEnabled = true;		
+		lineInputText.focusGained = () -> FlxG.stage.window.textInputEnabled = true;			
 		blockPressWhileTypingOn.push(lineInputText);
 
 		var loadButton:FlxButton = new FlxButton(20, lineInputText.y + 30, "Load Dialogue", function() {
@@ -338,7 +333,7 @@ class DialogueEditorState extends MusicBeatState
 			if(FlxG.keys.justPressed.SPACE) {
 				reloadText(speedStepper.value);
 			}
-			if(FlxG.keys.justPressed.ESCAPE #if mobileC || _virtualpad.buttonA.justPressed #end) {
+			if(FlxG.keys.justPressed.ESCAPE #if android || FlxG.android.justReleased.BACK #end) {
 				MusicBeatState.switchState(new editors.MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'), 1);
 				transitioning = true;
@@ -437,93 +432,37 @@ class DialogueEditorState extends MusicBeatState
 		return text;
 	}
 
-	var _file:FileReference = null;
 	function loadDialogue() {
-		var jsonFilter:FileFilter = new FileFilter('JSON', 'json');
-		_file = new FileReference();
-		_file.addEventListener(Event.SELECT, onLoadComplete);
-		_file.addEventListener(Event.CANCEL, onLoadCancel);
-		_file.addEventListener(IOErrorEvent.IO_ERROR, onLoadError);
-		_file.browse([jsonFilter]);
+		var path:String = Main.getDataPath() + "yourthings/yourdialogue.json";
+		if (FileSystem.exists(path))
+                {
+                    LoadCheck();
+                }
 	}
 
-	function onLoadComplete(_):Void
+	function LoadCheck():Void
 	{
-		_file.removeEventListener(Event.SELECT, onLoadComplete);
-		_file.removeEventListener(Event.CANCEL, onLoadCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
-
-		trace("File couldn't be loaded! You aren't on Desktop, are you?");
-	}
-
-	/**
-		* Called when the save file dialog is cancelled.
-		*/
-	function onLoadCancel(_):Void
-	{
-		_file.removeEventListener(Event.SELECT, onLoadComplete);
-		_file.removeEventListener(Event.CANCEL, onLoadCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
-		_file = null;
-		trace("Cancelled file loading.");
-	}
-
-	/**
-		* Called if there is an error while saving the gameplay recording.
-		*/
-	function onLoadError(_):Void
-	{
-		_file.removeEventListener(Event.SELECT, onLoadComplete);
-		_file.removeEventListener(Event.CANCEL, onLoadCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
-		_file = null;
-		trace("Problem loading file");
+		var path:String = Main.getDataPath() + "yourthings/yourdialogue.json";
+		if (FileSystem.exists(path))
+                {
+			var rawJson:String = File.getContent(path);
+			if(rawJson != null) {
+				var loadedDialog:DialogueFile = cast Json.parse(rawJson);
+				if(loadedDialog.dialogue != null && loadedDialog.dialogue.length > 0) //Make sure it's really a dialogue file
+				{
+					dialogueFile = loadedDialog;
+					changeText();
+					return;
+				}
+			}
+		}
 	}
 
 	function saveDialogue() {
 		var data:String = Json.stringify(dialogueFile, "\t");
-
-		openfl.system.System.setClipboard(data.trim());
-
 		if (data.length > 0)
 		{
-			_file = new FileReference();
-			_file.addEventListener(Event.COMPLETE, onSaveComplete);
-			_file.addEventListener(Event.CANCEL, onSaveCancel);
-			_file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-			_file.save(data, "dialogue.json");
+			openfl.system.System.setClipboard(data.trim());
 		}
-	}
-
-	function onSaveComplete(_):Void
-	{
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
-		_file.removeEventListener(Event.CANCEL, onSaveCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-		_file = null;
-		FlxG.log.notice("Successfully saved file.");
-	}
-
-	/**
-		* Called when the save file dialog is cancelled.
-		*/
-	function onSaveCancel(_):Void
-	{
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
-		_file.removeEventListener(Event.CANCEL, onSaveCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-		_file = null;
-	}
-
-	/**
-		* Called if there is an error while saving the gameplay recording.
-		*/
-	function onSaveError(_):Void
-	{
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
-		_file.removeEventListener(Event.CANCEL, onSaveCancel);
-		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-		_file = null;
-		FlxG.log.error("Problem saving file");
 	}
 }
