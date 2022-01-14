@@ -19,6 +19,7 @@ import flixel.util.FlxColor;
 import lime.app.Application;
 import Achievements;
 import editors.MasterEditorMenu;
+import flixel.input.keyboard.FlxKey;
 
 using StringTools;
 
@@ -152,7 +153,7 @@ class MainMenuState extends MusicBeatState
 			}
 		}
 		#end
-		
+        
         #if mobileC
 		addVirtualPad(UP_DOWN, A_B_C);
 		#end

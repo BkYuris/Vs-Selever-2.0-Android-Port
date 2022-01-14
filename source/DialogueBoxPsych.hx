@@ -12,6 +12,10 @@ import flixel.util.FlxTimer;
 import flixel.FlxSubState;
 import haxe.Json;
 import haxe.format.JsonParser;
+#if sys
+import sys.FileSystem;
+import sys.io.File;
+#end
 import openfl.utils.Assets;
 
 using StringTools;
@@ -45,6 +49,8 @@ typedef DialogueLine = {
 	var text:Null<String>;
 	var boxState:Null<String>;
 	var speed:Null<Float>;
+	//var skipdelay:Null<Int>;
+	//var append:Null<Bool>; //thinkin bout having some rpg type text shit.
 }
 
 class DialogueCharacter extends FlxSprite
@@ -63,7 +69,8 @@ class DialogueCharacter extends FlxSprite
 	public var startingPos:Float = 0; //For center characters, it works as the starting Y, for everything else it works as starting X
 	public var isGhost:Bool = false; //For the editor
 	public var curCharacter:String = 'bf';
-
+	public var skiptimer = 0;
+	public var skipping = 0;
 	public function new(x:Float = 0, y:Float = 0, character:String = null)
 	{
 		super(x, y);
@@ -80,8 +87,21 @@ class DialogueCharacter extends FlxSprite
 		var characterPath:String = 'images/dialogue/' + character + '.json';
 		var rawJson = null;
 
+		#if MODS_ALLOWED
+		var path:String = Paths.modFolders(characterPath);
+		if (!FileSystem.exists(path)) {
+			path = Paths.getPreloadPath(characterPath);
+		}
+
+		if(!FileSystem.exists(path)) {
+			path = Paths.getPreloadPath('images/dialogue/' + DEFAULT_CHARACTER + '.json');
+		}
+		rawJson = File.getContent(path);
+
+		#else
 		var path:String = Paths.getPreloadPath(characterPath);
 		rawJson = Assets.getText(path);
+		#end
 		
 		jsonFile = cast Json.parse(rawJson);
 	}
@@ -269,8 +289,7 @@ class DialogueBoxPsych extends FlxSpriteGroup
 		if(!dialogueEnded) {
 			bgFade.alpha += 0.5 * elapsed;
 			if(bgFade.alpha > 0.5) bgFade.alpha = 0.5;
-
-			#if mobile
+#if mobile
 		    var justTouched:Bool = false;
 
 		    for (touch in FlxG.touches.list)
@@ -485,6 +504,9 @@ class DialogueBoxPsych extends FlxSpriteGroup
 
 		textToType = curDialogue.text;
 		daText = new Alphabet(DEFAULT_TEXT_X, DEFAULT_TEXT_Y, textToType, false, true, curDialogue.speed, 0.7);
+		daText.soundPath = fetchSound(curDialogue.portrait); //
+		FlxG.sound.cache(daText.soundPath);
+		//trace('Using sound: ' + daText.soundPath);
 		add(daText);
 
 		var char:DialogueCharacter = arrayCharacters[character];
@@ -504,19 +526,49 @@ class DialogueBoxPsych extends FlxSpriteGroup
 		}
 	}
 
-	public static function parseDialogue(path:String):DialogueFile {
-		var rawJson = Assets.getText(path);
-		return cast Json.parse(rawJson);
+	function fetchSound(name:String):String {
+		var sound:String = null;
+		//Audio loading from mods is not supported in Haxe, GFDI
+		/*#if (desktop && MODS_ALLOWED)
+		var paths:Array<String> = [
+			'mods/' + Paths.currentModDirectory + '/sounds/dialogue/$name.ogg',
+			'mods/sounds/dialogue/$name.ogg',
+			Paths.sound('dialogue/$name'),
+			'mods/' + Paths.currentModDirectory + '/sounds/dialogue.ogg',
+			'mods/sounds/dialogue.ogg',
+			Paths.sound('dialogue')
+		];
+		for (path in paths) {
+			//trace(path);
+			if (FileSystem.exists(path) || Assets.exists(path)) {
+				sound = path;
+				break;
+			}
+		}
+		#else*/
+		var paths:Array<String> = [
+			Paths.sound('dialogue/$name'),
+			Paths.sound('dialogue')
+		];
+		for (path in paths) {
+			if (Assets.exists(path)) {
+				sound = path;
+				break;
+			}
+		}
+		//#end
+		return sound;
 	}
-	
-public static function parseDialogue(path:String):DialogueFile {
+
+	public static function parseDialogue(path:String):DialogueFile {
 		var content:String = null;
+		#if MODS_ALLOWED
 		if (FileSystem.exists(path)) {
 			content = File.getContent(path);
 		}
-		
+		#else
 		content = Assets.getText(path);
-		
+		#end
 		if (path.toLowerCase().endsWith('.txt')) { //Compatibility with VS Selever dialogues
 			return parseTxtDialog(content);
 		} else { //Load the usual Psych json scripts

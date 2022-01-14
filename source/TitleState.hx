@@ -1,6 +1,5 @@
 package;
 
-
 #if desktop
 import Discord.DiscordClient;
 import sys.thread.Thread;
@@ -13,6 +12,13 @@ import flixel.addons.display.FlxGridOverlay;
 import flixel.addons.transition.FlxTransitionSprite.GraphicTransTileDiamond;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.addons.transition.TransitionData;
+import haxe.Json;
+import openfl.display.Bitmap;
+import openfl.display.BitmapData;
+#if MODS_ALLOWED
+import sys.FileSystem;
+import sys.io.File;
+#end
 //import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.group.FlxGroup;
